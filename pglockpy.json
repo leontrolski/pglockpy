@@ -1,0 +1,389 @@
+{
+    "statements": {
+        "DROP TABLE": {
+            "example": "DROP TABLE t",
+            "lockTypes": [
+                "ACCESS EXCLUSIVE"
+            ]
+        },
+        "TRUNCATE": {
+            "example": "TRUNCATE t",
+            "lockTypes": [
+                "ACCESS EXCLUSIVE"
+            ]
+        },
+        "CREATE TABLE": {
+            "example": "CREATE TABLE v (id INT)",
+            "lockTypes": []
+        },
+        "ALTER TABLE": {
+            "example": "ALTER TABLE t ADD COLUMN col INT",
+            "lockTypes": [
+                "ACCESS EXCLUSIVE"
+            ]
+        },
+        "REINDEX": {
+            "example": "REINDEX TABLE t",
+            "lockTypes": [
+                "SHARE"
+            ]
+        },
+        "VACUUM FULL": {
+            "example": "VACUUM FULL",
+            "lockTypes": [
+                "ACCESS EXCLUSIVE"
+            ]
+        },
+        "REFERESH MATERIALIZED VIEW": {
+            "example": "REFRESH MATERIALIZED VIEW mat",
+            "lockTypes": [
+                "ACCESS EXCLUSIVE",
+                "ACCESS SHARE",
+                "ACCESS SHARE",
+                "EXCLUSIVE"
+            ]
+        },
+        "ALTER TABLE FOREIGN KEY": {
+            "example": "ALTER TABLE t ADD CONSTRAINT fk FOREIGN KEY (id) REFERENCES u (id)",
+            "lockTypes": [
+                "SHARE ROW EXCLUSIVE"
+            ]
+        },
+        "CREATE TRIGGER": {
+            "example": "CREATE TRIGGER trig AFTER INSERT ON t FOR EACH ROW EXECUTE FUNCTION f()",
+            "lockTypes": [
+                "SHARE ROW EXCLUSIVE"
+            ]
+        },
+        "CREATE INDEX": {
+            "example": "CREATE INDEX idy ON t (id)",
+            "lockTypes": [
+                "SHARE"
+            ]
+        },
+        "VACUUM": {
+            "example": "VACUUM",
+            "lockTypes": [
+                "SHARE UPDATE EXCLUSIVE"
+            ]
+        },
+        "ANALYZE": {
+            "example": "ANALYZE",
+            "lockTypes": [
+                "SHARE UPDATE EXCLUSIVE"
+            ]
+        },
+        "CREATE INDEX CONCURRENTLY": {
+            "example": "CREATE INDEX CONCURRENTLY idy ON t (id)",
+            "lockTypes": [
+                "SHARE UPDATE EXCLUSIVE"
+            ]
+        },
+        "CREATE STATISTICS": {
+            "example": "CREATE STATISTICS stat ON id FROM t",
+            "lockTypes": [
+                "SHARE UPDATE EXCLUSIVE"
+            ]
+        },
+        "REINDEX CONCURRENTLY": {
+            "example": "REINDEX TABLE CONCURRENTLY t",
+            "lockTypes": [
+                "SHARE UPDATE EXCLUSIVE"
+            ]
+        },
+        "ALTER TABLE SET STATISTICS": {
+            "example": "ALTER TABLE t ALTER COLUMN id SET STATISTICS 100",
+            "lockTypes": [
+                "SHARE UPDATE EXCLUSIVE"
+            ]
+        },
+        "ALTER TABLE VALIDATE CONSTRAINT": {
+            "example": "ALTER TABLE t VALIDATE CONSTRAINT constr",
+            "lockTypes": [
+                "SHARE UPDATE EXCLUSIVE"
+            ]
+        },
+        "ALTER INDEX RENAME": {
+            "example": "ALTER INDEX idx RENAME TO idy",
+            "lockTypes": []
+        },
+        "UPDATE": {
+            "example": "UPDATE t SET id = 4",
+            "lockTypes": [
+                "ROW EXCLUSIVE"
+            ]
+        },
+        "DELETE": {
+            "example": "DELETE FROM t",
+            "lockTypes": [
+                "ROW EXCLUSIVE"
+            ]
+        },
+        "INSERT": {
+            "example": "INSERT INTO t VALUES (1)",
+            "lockTypes": [
+                "ROW EXCLUSIVE"
+            ]
+        },
+        "MERGE": {
+            "example": "MERGE INTO t USING u AS sub ON t.id = u.id WHEN MATCHED THEN DO NOTHING",
+            "lockTypes": [
+                "ROW EXCLUSIVE"
+            ]
+        },
+        "SELECT FOR UPDATE": {
+            "example": "SELECT * FROM t FOR UPDATE",
+            "lockTypes": [
+                "ROW SHARE",
+                "FOR UPDATE"
+            ]
+        },
+        "SELECT FOR NO KEY UPDATE": {
+            "example": "SELECT * FROM t FOR NO KEY UPDATE",
+            "lockTypes": [
+                "ROW SHARE",
+                "FOR NO KEY UPDATE"
+            ]
+        },
+        "SELECT FOR SHARE": {
+            "example": "SELECT * FROM t FOR SHARE",
+            "lockTypes": [
+                "ROW SHARE",
+                "FOR SHARE"
+            ]
+        },
+        "SELECT FOR KEY SHARE": {
+            "example": "SELECT * FROM t FOR KEY SHARE",
+            "lockTypes": [
+                "ROW SHARE",
+                "FOR KEY SHARE"
+            ]
+        },
+        "SELECT": {
+            "example": "SELECT * FROM t",
+            "lockTypes": [
+                "ACCESS SHARE"
+            ]
+        }
+    },
+    "locks": {
+        "ACCESS EXCLUSIVE": {
+            "kind": "TABLE",
+            "blocks": [
+                "ACCESS SHARE",
+                "ROW SHARE",
+                "ROW EXCLUSIVE",
+                "SHARE UPDATE EXCLUSIVE",
+                "SHARE",
+                "SHARE ROW EXCLUSIVE",
+                "EXCLUSIVE",
+                "ACCESS EXCLUSIVE"
+            ],
+            "doesntBlock": [],
+            "statements": [
+                "DROP TABLE",
+                "TRUNCATE",
+                "VACUUM FULL",
+                "ALTER TABLE",
+                "REFERESH MATERIALIZED VIEW"
+            ]
+        },
+        "EXCLUSIVE": {
+            "kind": "TABLE",
+            "blocks": [
+                "ROW SHARE",
+                "ROW EXCLUSIVE",
+                "SHARE UPDATE EXCLUSIVE",
+                "SHARE",
+                "SHARE ROW EXCLUSIVE",
+                "EXCLUSIVE",
+                "ACCESS EXCLUSIVE"
+            ],
+            "doesntBlock": [
+                "ACCESS SHARE"
+            ],
+            "statements": [
+                "REFERESH MATERIALIZED VIEW"
+            ]
+        },
+        "SHARE ROW EXCLUSIVE": {
+            "kind": "TABLE",
+            "blocks": [
+                "ROW EXCLUSIVE",
+                "SHARE UPDATE EXCLUSIVE",
+                "SHARE",
+                "SHARE ROW EXCLUSIVE",
+                "EXCLUSIVE",
+                "ACCESS EXCLUSIVE"
+            ],
+            "doesntBlock": [
+                "ACCESS SHARE",
+                "ROW SHARE"
+            ],
+            "statements": [
+                "ALTER TABLE FOREIGN KEY",
+                "CREATE TRIGGER"
+            ]
+        },
+        "SHARE": {
+            "kind": "TABLE",
+            "blocks": [
+                "ROW EXCLUSIVE",
+                "SHARE UPDATE EXCLUSIVE",
+                "SHARE ROW EXCLUSIVE",
+                "EXCLUSIVE",
+                "ACCESS EXCLUSIVE"
+            ],
+            "doesntBlock": [
+                "ACCESS SHARE",
+                "ROW SHARE",
+                "SHARE"
+            ],
+            "statements": [
+                "REINDEX",
+                "CREATE INDEX"
+            ]
+        },
+        "SHARE UPDATE EXCLUSIVE": {
+            "kind": "TABLE",
+            "blocks": [
+                "SHARE UPDATE EXCLUSIVE",
+                "SHARE",
+                "SHARE ROW EXCLUSIVE",
+                "EXCLUSIVE",
+                "ACCESS EXCLUSIVE"
+            ],
+            "doesntBlock": [
+                "ACCESS SHARE",
+                "ROW SHARE",
+                "ROW EXCLUSIVE"
+            ],
+            "statements": [
+                "VACUUM",
+                "ANALYZE",
+                "CREATE INDEX CONCURRENTLY",
+                "CREATE STATISTICS",
+                "REINDEX CONCURRENTLY",
+                "ALTER TABLE SET STATISTICS",
+                "ALTER TABLE VALIDATE CONSTRAINT"
+            ]
+        },
+        "ROW EXCLUSIVE": {
+            "kind": "TABLE",
+            "blocks": [
+                "SHARE",
+                "SHARE ROW EXCLUSIVE",
+                "EXCLUSIVE",
+                "ACCESS EXCLUSIVE"
+            ],
+            "doesntBlock": [
+                "ACCESS SHARE",
+                "ROW SHARE",
+                "ROW EXCLUSIVE",
+                "SHARE UPDATE EXCLUSIVE"
+            ],
+            "statements": [
+                "UPDATE",
+                "DELETE",
+                "INSERT",
+                "MERGE"
+            ]
+        },
+        "ROW SHARE": {
+            "kind": "TABLE",
+            "blocks": [
+                "EXCLUSIVE",
+                "ACCESS EXCLUSIVE"
+            ],
+            "doesntBlock": [
+                "ACCESS SHARE",
+                "ROW SHARE",
+                "ROW EXCLUSIVE",
+                "SHARE UPDATE EXCLUSIVE",
+                "SHARE",
+                "SHARE ROW EXCLUSIVE"
+            ],
+            "statements": [
+                "SELECT FOR UPDATE",
+                "SELECT FOR NO KEY UPDATE",
+                "SELECT FOR SHARE",
+                "SELECT FOR KEY SHARE"
+            ]
+        },
+        "ACCESS SHARE": {
+            "kind": "TABLE",
+            "blocks": [
+                "ACCESS EXCLUSIVE"
+            ],
+            "doesntBlock": [
+                "ACCESS SHARE",
+                "ROW SHARE",
+                "ROW EXCLUSIVE",
+                "SHARE UPDATE EXCLUSIVE",
+                "SHARE",
+                "SHARE ROW EXCLUSIVE",
+                "EXCLUSIVE"
+            ],
+            "statements": [
+                "REFERESH MATERIALIZED VIEW",
+                "REFERESH MATERIALIZED VIEW",
+                "SELECT"
+            ]
+        },
+        "FOR UPDATE": {
+            "kind": "ROW",
+            "blocks": [
+                "FOR KEY SHARE",
+                "FOR SHARE",
+                "FOR NO KEY UPDATE",
+                "FOR UPDATE"
+            ],
+            "doesntBlock": [],
+            "statements": [
+                "SELECT FOR UPDATE"
+            ]
+        },
+        "FOR NO KEY UPDATE": {
+            "kind": "ROW",
+            "blocks": [
+                "FOR SHARE",
+                "FOR NO KEY UPDATE",
+                "FOR UPDATE"
+            ],
+            "doesntBlock": [
+                "FOR KEY SHARE"
+            ],
+            "statements": [
+                "SELECT FOR NO KEY UPDATE"
+            ]
+        },
+        "FOR SHARE": {
+            "kind": "ROW",
+            "blocks": [
+                "FOR NO KEY UPDATE",
+                "FOR UPDATE"
+            ],
+            "doesntBlock": [
+                "FOR KEY SHARE",
+                "FOR SHARE"
+            ],
+            "statements": [
+                "SELECT FOR SHARE"
+            ]
+        },
+        "FOR KEY SHARE": {
+            "kind": "ROW",
+            "blocks": [
+                "FOR UPDATE"
+            ],
+            "doesntBlock": [
+                "FOR KEY SHARE",
+                "FOR SHARE",
+                "FOR NO KEY UPDATE"
+            ],
+            "statements": [
+                "SELECT FOR KEY SHARE"
+            ]
+        }
+    }
+}

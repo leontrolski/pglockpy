@@ -37,10 +37,9 @@
         "REFERESH MATERIALIZED VIEW": {
             "example": "REFRESH MATERIALIZED VIEW mat",
             "lockTypes": [
-                "ACCESS EXCLUSIVE",
+                "EXCLUSIVE",
                 "ACCESS SHARE",
-                "ACCESS SHARE",
-                "EXCLUSIVE"
+                "ACCESS EXCLUSIVE"
             ]
         },
         "ALTER TABLE FOREIGN KEY": {
@@ -110,13 +109,15 @@
         "UPDATE": {
             "example": "UPDATE t SET id = 4",
             "lockTypes": [
-                "ROW EXCLUSIVE"
+                "ROW EXCLUSIVE",
+                "FOR NO KEY UPDATE"
             ]
         },
         "DELETE": {
             "example": "DELETE FROM t",
             "lockTypes": [
-                "ROW EXCLUSIVE"
+                "ROW EXCLUSIVE",
+                "FOR UPDATE"
             ]
         },
         "INSERT": {
@@ -326,7 +327,6 @@
             ],
             "statements": [
                 "REFERESH MATERIALIZED VIEW",
-                "REFERESH MATERIALIZED VIEW",
                 "SELECT"
             ]
         },
@@ -340,7 +340,8 @@
             ],
             "doesntBlock": [],
             "statements": [
-                "SELECT FOR UPDATE"
+                "SELECT FOR UPDATE",
+                "DELETE"
             ]
         },
         "FOR NO KEY UPDATE": {
@@ -354,7 +355,8 @@
                 "FOR KEY SHARE"
             ],
             "statements": [
-                "SELECT FOR NO KEY UPDATE"
+                "SELECT FOR NO KEY UPDATE",
+                "UPDATE"
             ]
         },
         "FOR SHARE": {

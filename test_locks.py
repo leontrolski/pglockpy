@@ -398,6 +398,53 @@ def test_statement_takes_locks(
         assert actual_locks == locks
 
 
+def test_update_locks(conns: Connections) -> None:
+    with conns.a.cursor() as cursor_a, conns.b.cursor() as cursor_b:
+        cursor_a.execute("INSERT INTO t VALUES (1)")
+        conns.a.commit()
+
+        cursor_a.execute(f"UPDATE t SET id = 2")
+
+        # Note, we can always do a standard SELECT
+        cursor_b.execute("SELECT * FROM t")
+
+        for lock_kind in [
+            L.FOR_KEY_SHARE,
+        ]:
+            cursor_b.execute(f"SELECT * FROM t {lock_kind.value} NOWAIT")
+            conns.b.rollback()
+
+        for lock_kind in [
+            L.FOR_SHARE,
+            L.FOR_NO_KEY_UPDATE,
+            L.FOR_UPDATE,
+        ]:
+            with pytest.raises(psycopg.errors.LockNotAvailable):
+                cursor_b.execute(f"SELECT * FROM t {lock_kind.value} NOWAIT")
+            conns.b.rollback()
+
+
+def test_delete_locks(conns: Connections) -> None:
+    with conns.a.cursor() as cursor_a, conns.b.cursor() as cursor_b:
+        cursor_a.execute("INSERT INTO t VALUES (1)")
+        conns.a.commit()
+
+        cursor_a.execute(f"DELETE FROM t")
+
+        # Note, we can always do a standard SELECT
+        cursor_b.execute("SELECT * FROM t")
+
+        for lock_kind in [
+            L.FOR_KEY_SHARE,
+            L.FOR_SHARE,
+            L.FOR_NO_KEY_UPDATE,
+            L.FOR_UPDATE,
+        ]:
+            with pytest.raises(psycopg.errors.LockNotAvailable):
+                cursor_b.execute(f"SELECT * FROM t {lock_kind.value} NOWAIT")
+            conns.b.rollback()
+
+
 # Helpers
 
 
@@ -480,12 +527,14 @@ def test_dump_json() -> None:
     )
     for statement, locks in STATEMENT_RELATION_LOCKS:
         for l in locks:
-            data["statements"][statement.name_no_underscore]["lockTypes"].append(
-                l.lock_kind.value
-            )
-            data["locks"][l.lock_kind.value]["statements"].append(
-                statement.name_no_underscore
-            )
+            if l.lock_kind.value not in data["statements"][statement.name_no_underscore]["lockTypes"]:
+                data["statements"][statement.name_no_underscore]["lockTypes"].append(
+                    l.lock_kind.value
+                )
+            if statement.name_no_underscore not in data["locks"][l.lock_kind.value]["statements"]:
+                data["locks"][l.lock_kind.value]["statements"].append(
+                    statement.name_no_underscore
+                )
 
     # Add assumed row locks
     for statement, lock_kind in [
@@ -493,6 +542,8 @@ def test_dump_json() -> None:
         (Statement.SELECT_FOR_NO_KEY_UPDATE, L.FOR_NO_KEY_UPDATE),
         (Statement.SELECT_FOR_SHARE, L.FOR_SHARE),
         (Statement.SELECT_FOR_KEY_SHARE, L.FOR_KEY_SHARE),
+        (Statement.UPDATE, L.FOR_NO_KEY_UPDATE),
+        (Statement.DELETE, L.FOR_UPDATE),
     ]:
         data["statements"][statement.name_no_underscore]["lockTypes"].append(
             lock_kind.value

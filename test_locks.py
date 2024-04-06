@@ -10,8 +10,8 @@ from typing import Iterator
 import psycopg
 import pytest
 
-ROOT_URL = "postgres://user:password@localhost:5432/postgres"
-URL = "postgres://user:password@localhost:5432/pglockpy"
+ROOT_URL = "postgres:///postgres"
+URL = "postgres:///pglockpy"
 SET_UP_SQL = """
     CREATE TABLE t (id INT);
     CREATE TABLE u (id INT);

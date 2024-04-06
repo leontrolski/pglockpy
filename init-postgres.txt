@@ -1,0 +1,4 @@
+# For mac users
+brew install postgresql@15
+/opt/homebrew/opt/postgresql@15/bin/initdb -D ~/tmp/postgres
+/opt/homebrew/opt/postgresql@15/bin/pg_ctl -D ~/tmp/postgres -l ~/tmp/postgres.log start

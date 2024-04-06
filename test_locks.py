@@ -15,6 +15,7 @@ URL = "postgres:///pglockpy"
 SET_UP_SQL = """
     CREATE TABLE t (id INT);
     CREATE TABLE u (id INT);
+    CREATE TABLE v (with_unique_index INT UNIQUE);
     CREATE MATERIALIZED VIEW mat AS SELECT * FROM t;
     CREATE INDEX idx ON t (id);
     CREATE OR REPLACE FUNCTION f() RETURNS TRIGGER AS $$ BEGIN RETURN NEW; END; $$ LANGUAGE plpgsql;
@@ -118,6 +119,7 @@ class Statement(enum.Enum):
     ALTER_TABLE_VALIDATE_CONSTRAINT = "ALTER TABLE t VALIDATE CONSTRAINT constr"
     ALTER_INDEX_RENAME = "ALTER INDEX idx RENAME TO idy"
     UPDATE = "UPDATE t SET id = 4"
+    UPDATE_UNIQUE = "UPDATE v SET with_unique_index = 4"
     DELETE = "DELETE FROM t"
     INSERT = "INSERT INTO t VALUES (1)"
     MERGE = "MERGE INTO t USING u AS sub ON t.id = u.id WHEN MATCHED THEN DO NOTHING"
@@ -297,6 +299,10 @@ STATEMENT_RELATION_LOCKS: list[tuple[Statement, set[Lock]]] = [
         {Lock(relation="t", lock_kind=L.ROW_EXCLUSIVE)},
     ),
     (
+        Statement.UPDATE_UNIQUE,
+        {Lock(relation="v", lock_kind=L.ROW_EXCLUSIVE)},
+    ),
+    (
         Statement.DELETE,
         {Lock(relation="t", lock_kind=L.ROW_EXCLUSIVE)},
     ),
@@ -388,7 +394,7 @@ def test_statement_takes_locks(
     conns: Connections, statement: Statement, locks: set[Lock]
 ) -> None:
     with conns.a.cursor() as lock_cursor:
-        lock_tables(lock_cursor, ["t", "u"])
+        lock_tables(lock_cursor, ["t", "u", "v"])
 
         with execute_in_thread(conns.c, statement.value):
             pid = conns.c.info.backend_pid
@@ -421,6 +427,27 @@ def test_update_locks(conns: Connections) -> None:
         ]:
             with pytest.raises(psycopg.errors.LockNotAvailable):
                 cursor_b.execute(f"SELECT * FROM t {lock_kind.value} NOWAIT")
+            conns.b.rollback()
+
+
+def test_update_unique_locks(conns: Connections) -> None:
+    with conns.a.cursor() as cursor_a, conns.b.cursor() as cursor_b:
+        cursor_a.execute("INSERT INTO v VALUES (1)")
+        conns.a.commit()
+
+        cursor_a.execute(f"UPDATE v SET with_unique_index = 2")
+
+        # Note, we can always do a standard SELECT
+        cursor_b.execute("SELECT * FROM v")
+
+        for lock_kind in [
+            L.FOR_KEY_SHARE,
+            L.FOR_SHARE,
+            L.FOR_NO_KEY_UPDATE,
+            L.FOR_UPDATE,
+        ]:
+            with pytest.raises(psycopg.errors.LockNotAvailable):
+                cursor_b.execute(f"SELECT * FROM v {lock_kind.value} NOWAIT")
             conns.b.rollback()
 
 
@@ -543,6 +570,7 @@ def test_dump_json() -> None:
         (Statement.SELECT_FOR_SHARE, L.FOR_SHARE),
         (Statement.SELECT_FOR_KEY_SHARE, L.FOR_KEY_SHARE),
         (Statement.UPDATE, L.FOR_NO_KEY_UPDATE),
+        (Statement.UPDATE_UNIQUE, L.FOR_UPDATE),
         (Statement.DELETE, L.FOR_UPDATE),
     ]:
         data["statements"][statement.name_no_underscore]["lockTypes"].append(

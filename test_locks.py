@@ -504,7 +504,6 @@ def wait_for_statement(cursor: psycopg.Cursor, pid: int) -> None:
         FROM pg_stat_activity
         WHERE pid = %s AND query != 'BEGIN'
     """
-    time.sleep(0.01)  # not sure why I can't get rid of this...
     while True:
         cursor.execute(qry, [pid])
         if cursor.fetchall():
